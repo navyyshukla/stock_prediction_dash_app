@@ -2,7 +2,7 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objs as go
@@ -51,10 +51,10 @@ def get_stock_price_fig(df):
     
     fig.update_layout(
         title="Closing and Opening Price vs Date",
-        template='plotly_white',
-        paper_bgcolor='white',
-        plot_bgcolor='white',
-        font=dict(color='black'),
+        template='plotly_dark',
+        paper_bgcolor='#34495e',
+        plot_bgcolor='#2c3e50',
+        font=dict(color='white'),
         xaxis_title="Date",
         yaxis_title="Value",
         legend=dict(
@@ -78,14 +78,14 @@ def get_more_fig(df):
     
     df['EWA_20'] = df[close_col].ewm(span=20, adjust=False).mean()
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=df[date_col], y=df['EWA_20'], mode='lines+markers', name='EMA 20', line=dict(color='blue'), marker=dict(size=4)))
+    fig.add_trace(go.Scatter(x=df[date_col], y=df['EWA_20'], mode='lines+markers', name='EMA 20', line=dict(color='#3498db'), marker=dict(size=4)))
 
     fig.update_layout(
         title="Exponential Moving Average vs Date",
-        template='plotly_white',
-        paper_bgcolor='white',
-        plot_bgcolor='white',
-        font=dict(color='black'),
+        template='plotly_dark',
+        paper_bgcolor='#34495e',
+        plot_bgcolor='#2c3e50',
+        font=dict(color='white'),
         xaxis_title="Date",
         yaxis_title="EWA_20"
     )
@@ -99,153 +99,256 @@ def validate_date_string(date_string):
         return None
 
 # --- App Layout ---
-app.layout = html.Div(className="container", children=[
+app.layout = html.Div(className="container", style={'backgroundColor': '#2c3e50', 'minHeight': '100vh'}, children=[
     # --- Navigation/Input Section ---
     html.Div(
         className="nav",
+        style={
+            'backgroundColor': '#34495e',
+            'padding': '25px',
+            'borderRadius': '12px',
+            'boxShadow': '0 4px 12px rgba(0,0,0,0.3)',
+            'margin': '20px',
+            'width': '350px',
+            'position': 'fixed',
+            'height': 'calc(100vh - 40px)',
+            'overflowY': 'auto'
+        },
         children=[
-            html.H1("Stock Dash App", className="start"),
-            html.Div(className="input-container", children=[
-                html.H3("Input stock code:"),
-                dcc.Input(
-                    id='stock_code_input', 
-                    type='text', 
-                    placeholder='e.g., GOOGL', 
-                    value='GOOGL',
-                    style={'width': '200px', 'padding': '5px', 'margin-bottom': '10px'}
-                ),
-                html.Button(
-                    'Submit', 
-                    id='submit_stock_code_button', 
-                    n_clicks=0, 
-                    style={
-                        'background-color': '#00BFFF', 
-                        'border': 'none', 
-                        'padding': '8px 15px',
-                        'color': 'white',
-                        'border-radius': '4px',
-                        'cursor': 'pointer'
-                    }
-                )
+            html.H1("Stock Dash App", className="start", style={'color': '#3498db', 'marginBottom': '30px', 'fontSize': '28px'}),
+            
+            # Stock Code Input Section
+            html.Div(className="input-container", style={'marginBottom': '25px'}, children=[
+                html.H3("Input stock code:", style={'marginBottom': '12px', 'color': '#ecf0f1', 'fontSize': '16px', 'fontWeight': 'bold'}),
+                html.Div(style={'display': 'flex', 'gap': '10px', 'alignItems': 'center'}, children=[
+                    dcc.Input(
+                        id='stock_code_input', 
+                        type='text', 
+                        placeholder='e.g., GOOGL', 
+                        value='GOOGL',
+                        style={
+                            'width': '180px', 
+                            'padding': '12px', 
+                            'border': '2px solid #e8ecf0',
+                            'borderRadius': '8px',
+                            'fontSize': '14px',
+                            'outline': 'none',
+                            'transition': 'border-color 0.3s'
+                        }
+                    ),
+                    html.Button(
+                        'Submit', 
+                        id='submit_stock_code_button', 
+                        n_clicks=0, 
+                        style={
+                            'backgroundColor': '#27ae60', 
+                            'border': 'none', 
+                            'padding': '12px 18px',
+                            'color': 'white',
+                            'borderRadius': '8px',
+                            'cursor': 'pointer',
+                            'fontSize': '14px',
+                            'fontWeight': 'bold',
+                            'transition': 'background-color 0.3s'
+                        }
+                    )
+                ])
             ]),
             
             # Improved Date Input Section
-            html.Div(className="input-container", children=[
-                html.H3("Select start and end dates:"),
-                html.Div(style={'display': 'flex', 'flex-direction': 'column', 'gap': '10px'}, children=[
-                    # Manual Date Input Option
-                    html.Div(style={'display': 'flex', 'gap': '10px', 'align-items': 'center'}, children=[
-                        html.Label("Start Date:", style={'min-width': '80px'}),
-                        dcc.Input(
-                            id='start_date_input',
-                            type='text',
-                            placeholder='YYYY-MM-DD (e.g., 2020-01-01)',
-                            value='2020-01-01',
-                            style={'width': '200px', 'padding': '5px', 'border': '1px solid #ccc', 'border-radius': '4px'}
-                        )
-                    ]),
-                    html.Div(style={'display': 'flex', 'gap': '10px', 'align-items': 'center'}, children=[
-                        html.Label("End Date:", style={'min-width': '80px'}),
-                        dcc.Input(
-                            id='end_date_input',
-                            type='text',
-                            placeholder='YYYY-MM-DD (e.g., 2024-12-31)',
-                            value=dt.now().strftime('%Y-%m-%d'),
-                            style={'width': '200px', 'padding': '5px', 'border': '1px solid #ccc', 'border-radius': '4px'}
-                        )
-                    ]),
-                    
-                    # Quick Date Presets
-                    html.Div(style={'margin-top': '10px'}, children=[
-                        html.Label("Quick Presets:", style={'margin-right': '10px'}),
-                        html.Button('Last 1 Year', id='preset_1y', n_clicks=0, style={'margin-right': '5px', 'padding': '4px 8px', 'font-size': '12px'}),
-                        html.Button('Last 6 Months', id='preset_6m', n_clicks=0, style={'margin-right': '5px', 'padding': '4px 8px', 'font-size': '12px'}),
-                        html.Button('Last 3 Months', id='preset_3m', n_clicks=0, style={'margin-right': '5px', 'padding': '4px 8px', 'font-size': '12px'}),
-                        html.Button('Last Month', id='preset_1m', n_clicks=0, style={'padding': '4px 8px', 'font-size': '12px'}),
-                    ]),
-                    
-                    # Fallback Date Picker (better styled)
-                    html.Details([
-                        html.Summary("Or use date picker", style={'cursor': 'pointer', 'color': '#666', 'margin-top': '10px'}),
-                        html.Div(style={'margin-top': '10px', 'padding': '10px', 'border': '1px solid #eee', 'border-radius': '4px'}, children=[
-                            dcc.DatePickerRange(
-                                id='date_picker_range',
-                                min_date_allowed=dt(1970, 1, 1),
-                                max_date_allowed=dt.now(),
-                                start_date=dt(2020, 1, 1),
-                                end_date=dt.now(),
-                                display_format='YYYY-MM-DD',
-                                style={'width': '100%'},
-                                calendar_orientation='horizontal'
+            html.Div(className="input-container", style={'marginBottom': '25px'}, children=[
+                html.H3("Select time period:", style={'marginBottom': '15px', 'color': '#ecf0f1', 'fontSize': '16px', 'fontWeight': 'bold'}),
+                
+                # Quick Date Presets - Improved styling
+                html.Div(style={'marginBottom': '20px'}, children=[
+                    html.Label("Quick Presets:", style={'display': 'block', 'marginBottom': '10px', 'fontWeight': 'bold', 'color': '#ecf0f1', 'fontSize': '14px'}),
+                    html.Div(style={'display': 'grid', 'gridTemplateColumns': '1fr 1fr', 'gap': '8px'}, children=[
+                        html.Button('1 Year', id='preset_1y', n_clicks=0, 
+                                  style={'padding': '10px 12px', 'backgroundColor': '#3498db', 'color': 'white', 
+                                        'border': 'none', 'borderRadius': '6px', 'cursor': 'pointer', 
+                                        'fontSize': '12px', 'fontWeight': 'bold', 'transition': 'background-color 0.3s'}),
+                        html.Button('6 Months', id='preset_6m', n_clicks=0, 
+                                  style={'padding': '10px 12px', 'backgroundColor': '#3498db', 'color': 'white', 
+                                        'border': 'none', 'borderRadius': '6px', 'cursor': 'pointer', 
+                                        'fontSize': '12px', 'fontWeight': 'bold', 'transition': 'background-color 0.3s'}),
+                        html.Button('3 Months', id='preset_3m', n_clicks=0, 
+                                  style={'padding': '10px 12px', 'backgroundColor': '#3498db', 'color': 'white', 
+                                        'border': 'none', 'borderRadius': '6px', 'cursor': 'pointer', 
+                                        'fontSize': '12px', 'fontWeight': 'bold', 'transition': 'background-color 0.3s'}),
+                        html.Button('1 Month', id='preset_1m', n_clicks=0, 
+                                  style={'padding': '10px 12px', 'backgroundColor': '#3498db', 'color': 'white', 
+                                        'border': 'none', 'borderRadius': '6px', 'cursor': 'pointer', 
+                                        'fontSize': '12px', 'fontWeight': 'bold', 'transition': 'background-color 0.3s'}),
+                    ])
+                ]),
+                
+                # Manual Date Input - Improved styling
+                html.Div(style={'backgroundColor': "#325e89", 'padding': '15px', 'borderRadius': '8px', 'marginBottom': '15px', 'border': '1px solid #4a5f7a'}, children=[
+                    html.Label("Custom Date Range:", style={'display': 'block', 'marginBottom': '12px', 'fontWeight': 'bold', 'color': '#ecf0f1', 'fontSize': '14px'}),
+                    html.Div(style={'display': 'grid', 'gridTemplateColumns': '1fr', 'gap': '12px'}, children=[
+                        html.Div(children=[
+                            html.Label("Start Date:", style={'display': 'block', 'marginBottom': '6px', 'color': '#ecf0f1', 'fontSize': '13px', 'fontWeight': 'bold'}),
+                            dcc.Input(
+                                id='start_date_input',
+                                type='text',
+                                placeholder='YYYY-MM-DD',
+                                value='2020-01-01',
+                                style={
+                                    'width': '100%', 
+                                    'padding': '10px', 
+                                    'border': '2px solid #dee2e6', 
+                                    'borderRadius': '6px',
+                                    'fontSize': '13px',
+                                    'backgroundColor': 'white',
+                                    'color' : '#000000'
+                                }
+                            )
+                        ]),
+                        html.Div(children=[
+                            html.Label("End Date:", style={'display': 'block', 'marginBottom': '6px', 'color': '#ecf0f1', 'fontSize': '13px', 'fontWeight': 'bold'}),
+                            dcc.Input(
+                                id='end_date_input',
+                                type='text',
+                                placeholder='YYYY-MM-DD',
+                                value=dt.now().strftime('%Y-%m-%d'),
+                                style={
+                                    'width': '100%', 
+                                    'padding': '10px', 
+                                    'border': '2px solid #dee2e6', 
+                                    'borderRadius': '6px',
+                                    'fontSize': '13px',
+                                    'backgroundColor': 'white',
+                                    'color' : '#000000'
+                                }
                             )
                         ])
                     ])
                 ]),
                 
+                # Enhanced Date Picker
+                html.Details([
+                    html.Summary("📅 Use Visual Date Picker", 
+                               style={'cursor': 'pointer', 'color': '#3498db', 'fontWeight': 'bold', 
+                                     'padding': '10px', 'marginBottom': '10px', 'fontSize': '14px',
+                                     'backgroundColor': '#2c3e50', 'borderRadius': '6px'}),
+                    html.Div(style={'marginTop': '10px', 'padding': '15px', 'backgroundColor': '#ffffff', 
+                                   'border': '2px solid #3498db', 'borderRadius': '8px'}, children=[
+                        dcc.DatePickerRange(
+                            id='date_picker_range',
+                            min_date_allowed=dt(1970, 1, 1),
+                            max_date_allowed=dt.now(),
+                            start_date=dt(2020, 1, 1),
+                            end_date=dt.now(),
+                            display_format='YYYY-MM-DD',
+                            style={'width': '100%'},
+                            calendar_orientation='horizontal'
+                        )
+                    ])
+                ]),
+                
                 # Date validation message
-                html.Div(id='date_validation_message', style={'color': 'red', 'font-size': '12px', 'margin-top': '5px'})
+                html.Div(id='date_validation_message', 
+                        style={'color': '#e74c3c', 'fontSize': '12px', 'marginTop': '8px', 'fontWeight': 'bold'})
             ]),
             
-            html.Div(className="input-container", children=[
-                html.Button(
-                    'Stock Price', 
-                    id='stock_price_button', 
-                    n_clicks=0, 
-                    style={
-                        'background-color': '#00BFFF', 
-                        'border': 'none', 
-                        'padding': '8px 15px', 
-                        'margin-right': '10px',
-                        'color': 'white',
-                        'border-radius': '4px',
-                        'cursor': 'pointer'
-                    }
-                ),
-                html.Button(
-                    'Indicators', 
-                    id='indicators_button', 
-                    n_clicks=0, 
-                    style={
-                        'background-color': '#00BFFF', 
-                        'border': 'none', 
-                        'padding': '8px 15px',
-                        'color': 'white',
-                        'border-radius': '4px',
-                        'cursor': 'pointer'
-                    }
-                ),
+            # Analysis Buttons - Same size styling
+            html.Div(className="input-container", style={'marginBottom': '25px'}, children=[
+                html.H3("Analysis Options:", style={'marginBottom': '15px', 'color': '#ecf0f1', 'fontSize': '16px', 'fontWeight': 'bold'}),
+                html.Div(style={'display': 'grid', 'gridTemplateColumns': '1fr', 'gap': '10px', 'marginBottom': '15px'}, children=[
+                    html.Button(
+                        'Stock Price', 
+                        id='stock_price_button', 
+                        n_clicks=0, 
+                        style={
+                            'backgroundColor': '#e67e22', 
+                            'border': 'none', 
+                            'padding': '14px 20px',
+                            'color': 'white',
+                            'borderRadius': '8px',
+                            'cursor': 'pointer',
+                            'fontSize': '14px',
+                            'fontWeight': 'bold',
+                            'width': '100%',
+                            'height': '48px',
+                            'transition': 'background-color 0.3s'
+                        }
+                    ),
+                    html.Button(
+                        'Indicators', 
+                        id='indicators_button', 
+                        n_clicks=0, 
+                        style={
+                            'backgroundColor': '#8e44ad', 
+                            'border': 'none', 
+                            'padding': '14px 20px',
+                            'color': 'white',
+                            'borderRadius': '8px',
+                            'cursor': 'pointer',
+                            'fontSize': '14px',
+                            'fontWeight': 'bold',
+                            'width': '100%',
+                            'height': '48px',
+                            'transition': 'background-color 0.3s'
+                        }
+                    ),
+                ]),
             ]),
+            
+            # Forecast Section
             html.Div(className="input-container", children=[
-                dcc.Input(
-                    id='forecast_days_input', 
-                    type='number', 
-                    placeholder='Number of days (1-30)', 
-                    min=1, 
-                    max=30,
-                    style={'margin-bottom': '10px', 'width': '200px', 'padding': '5px', 'border': '1px solid #ccc', 'border-radius': '4px'}
-                ),
-                html.Button(
-                    'Forecast', 
-                    id='forecast_button', 
-                    n_clicks=0, 
-                    style={
-                        'background-color': '#90EE90', 
-                        'border': 'none', 
-                        'padding': '8px 15px',
-                        'color': 'black',
-                        'border-radius': '4px',
-                        'cursor': 'pointer'
-                    }
-                )
+                html.H3("Forecast:", style={'marginBottom': '15px', 'color': '#ecf0f1', 'fontSize': '16px', 'fontWeight': 'bold'}),
+                html.Div(style={'display': 'flex', 'flexDirection': 'column', 'gap': '10px'}, children=[
+                    dcc.Input(
+                        id='forecast_days_input', 
+                        type='number', 
+                        placeholder='Days (1-30)', 
+                        min=1, 
+                        max=30,
+                        style={
+                            'width': '100%', 
+                            'padding': '12px', 
+                            'border': '2px solid #e8ecf0', 
+                            'borderRadius': '8px',
+                            'fontSize': '14px',
+                            'outline': 'none'
+                        }
+                    ),
+                    html.Button(
+                        'Generate Forecast', 
+                        id='forecast_button', 
+                        n_clicks=0, 
+                        style={
+                            'backgroundColor': '#27ae60', 
+                            'border': 'none', 
+                            'padding': '14px 20px',
+                            'color': 'white',
+                            'borderRadius': '8px',
+                            'cursor': 'pointer',
+                            'fontSize': '14px',
+                            'fontWeight': 'bold',
+                            'width': '100%',
+                            'transition': 'background-color 0.3s'
+                        }
+                    )
+                ])
             ]),
         ]
     ),
-    # --- Content/Output Section ---
+    # --- Content/Output Section - Updated with blue theme ---
     html.Div(
         className="content",
+        style={
+            'marginLeft': '390px', 
+            'padding': '20px',
+            'backgroundColor': '#34495e',  # Changed from '#ecf0f1' to match sidebar
+            'margin': '20px 20px 20px 390px',
+            'borderRadius': '12px',
+            'boxShadow': '0 4px 12px rgba(0,0,0,0.3)',
+            'minHeight': 'calc(100vh - 40px)'
+        },
         children=[
             html.Div(id="header", className="header"),
-            html.Div(id="description", className="description_ticker"),
+            html.Div(id="description", className="description_ticker", style={'color': '#ecf0f1'}),  # Added white text color
             html.Div(id="graphs-content"),
             html.Div(id="main-content"),
             html.Div(id="forecast-content")
@@ -254,6 +357,20 @@ app.layout = html.Div(className="container", children=[
 ])
 
 # --- Callbacks ---
+
+# NEW: Callback to clear previous results when submit button is clicked
+@app.callback(
+    [Output("graphs-content", "children", allow_duplicate=True),
+     Output("main-content", "children", allow_duplicate=True),
+     Output("forecast-content", "children", allow_duplicate=True)],
+    [Input("submit_stock_code_button", "n_clicks")],
+    prevent_initial_call=True
+)
+def clear_previous_results(n_clicks):
+    """Clear all previous graphs when submit button is clicked"""
+    if n_clicks > 0:
+        return [], [], []
+    raise PreventUpdate
 
 # Callback for date presets
 @app.callback(
@@ -270,19 +387,13 @@ def update_date_presets(n1y, n6m, n3m, n1m):
     end_date = dt.now()
     
     if button_id == 'preset_1y':
-        start_date = dt(end_date.year - 1, end_date.month, end_date.day)
+        start_date = end_date - timedelta(days=365)
     elif button_id == 'preset_6m':
-        start_date = dt(end_date.year, max(1, end_date.month - 6), end_date.day)
-        if end_date.month <= 6:
-            start_date = dt(end_date.year - 1, end_date.month + 6, end_date.day)
+        start_date = end_date - timedelta(days=180)
     elif button_id == 'preset_3m':
-        start_date = dt(end_date.year, max(1, end_date.month - 3), end_date.day)
-        if end_date.month <= 3:
-            start_date = dt(end_date.year - 1, end_date.month + 9, end_date.day)
+        start_date = end_date - timedelta(days=90)
     elif button_id == 'preset_1m':
-        start_date = dt(end_date.year, max(1, end_date.month - 1), end_date.day)
-        if end_date.month == 1:
-            start_date = dt(end_date.year - 1, 12, end_date.day)
+        start_date = end_date - timedelta(days=30)
     else:
         raise PreventUpdate
     
@@ -306,23 +417,23 @@ def sync_date_picker(start_date_str, end_date_str):
 )
 def validate_dates(start_date_str, end_date_str):
     if not start_date_str or not end_date_str:
-        return "Please enter both start and end dates"
+        return "⚠️ Please enter both start and end dates"
     
     start_date = validate_date_string(start_date_str)
     end_date = validate_date_string(end_date_str)
     
     if not start_date:
-        return "Invalid start date format. Use YYYY-MM-DD"
+        return "❌ Invalid start date format. Use YYYY-MM-DD"
     if not end_date:
-        return "Invalid end date format. Use YYYY-MM-DD"
+        return "❌ Invalid end date format. Use YYYY-MM-DD"
     if start_date >= dt.now().date():
-        return "Start date must be in the past"
+        return "❌ Start date must be in the past"
     if end_date > dt.now().date():
-        return "End date cannot be in the future"
+        return "❌ End date cannot be in the future"
     if start_date >= end_date:
-        return "Start date must be before end date"
+        return "❌ Start date must be before end date"
     
-    return ""
+    return "✅ Date range is valid"
 
 # Callback to update company information
 @app.callback(
@@ -349,15 +460,16 @@ def update_company_info(n_clicks, stock_code):
 
     header_children = [
         html.Img(src=logo_url, style={'height': '80px', 'width': '80px', 'display': 'block' if logo_url else 'none'}),
-        html.H1(f"{short_name}.")
+        html.H1(f"{short_name}.", style={'color': '#ecf0f1'})  # Added white text color
     ]
     return summary, header_children
 
 # Callback to update stock price graph
 @app.callback(
-    Output("graphs-content", "children"),
+    Output("graphs-content", "children", allow_duplicate=True),
     [Input("stock_price_button", "n_clicks")],
-    [State("stock_code_input", "value"), State("start_date_input", "value"), State("end_date_input", "value")]
+    [State("stock_code_input", "value"), State("start_date_input", "value"), State("end_date_input", "value")],
+    prevent_initial_call=True
 )
 def update_stock_graph(n_clicks, stock_code, start_date_str, end_date_str):
     if n_clicks == 0 or not stock_code:
@@ -368,30 +480,31 @@ def update_stock_graph(n_clicks, stock_code, start_date_str, end_date_str):
     end_date = validate_date_string(end_date_str) if end_date_str else dt.now().date()
     
     if not start_date or not end_date:
-        return html.P("Please enter valid dates in YYYY-MM-DD format", style={'color': 'red'})
+        return html.P("Please enter valid dates in YYYY-MM-DD format", style={'color': '#e74c3c'})
     
     if start_date >= end_date:
-        return html.P("Start date must be before end date", style={'color': 'red'})
+        return html.P("Start date must be before end date", style={'color': '#e74c3c'})
     
     try:
         # Download data
         data = yf.download(stock_code, start=start_date, end=end_date)
         
         if data.empty:
-            return html.P(f"No data found for {stock_code} in the selected date range.", style={'color': 'orange'})
+            return html.P(f"No data found for {stock_code} in the selected date range.", style={'color': '#f39c12'})
         
         # Reset index to get Date as a column
         df = data.reset_index()
         
         return dcc.Graph(figure=get_stock_price_fig(df))
     except Exception as e:
-        return html.P(f"An error occurred: {e}", style={'color': 'red'})
+        return html.P(f"An error occurred: {e}", style={'color': '#e74c3c'})
 
 # Callback to update indicator graph
 @app.callback(
-    Output("main-content", "children"),
+    Output("main-content", "children", allow_duplicate=True),
     [Input("indicators_button", "n_clicks")],
-    [State("stock_code_input", "value"), State("start_date_input", "value"), State("end_date_input", "value")]
+    [State("stock_code_input", "value"), State("start_date_input", "value"), State("end_date_input", "value")],
+    prevent_initial_call=True
 )
 def update_indicator_graph(n_clicks, stock_code, start_date_str, end_date_str):
     if n_clicks == 0 or not stock_code:
@@ -402,27 +515,28 @@ def update_indicator_graph(n_clicks, stock_code, start_date_str, end_date_str):
     end_date = validate_date_string(end_date_str) if end_date_str else dt.now().date()
     
     if not start_date or not end_date:
-        return html.P("Please enter valid dates in YYYY-MM-DD format", style={'color': 'red'})
+        return html.P("Please enter valid dates in YYYY-MM-DD format", style={'color': '#e74c3c'})
     
     if start_date >= end_date:
-        return html.P("Start date must be before end date", style={'color': 'red'})
+        return html.P("Start date must be before end date", style={'color': '#e74c3c'})
     
     try:
         # Download data
         data = yf.download(stock_code, start=start_date, end=end_date)
         if data.empty:
-            return html.P(f"No data found for {stock_code} in the selected date range.", style={'color': 'orange'})
+            return html.P(f"No data found for {stock_code} in the selected date range.", style={'color': '#f39c12'})
         
         df = data.reset_index()
         return dcc.Graph(figure=get_more_fig(df))
     except Exception as e:
-        return html.P(f"An error occurred: {e}", style={'color': 'red'})
+        return html.P(f"An error occurred: {e}", style={'color': '#e74c3c'})
 
 # Callback to update forecast graph
 @app.callback(
-    Output("forecast-content", "children"),
+    Output("forecast-content", "children", allow_duplicate=True),
     [Input("forecast_button", "n_clicks")],
-    [State("stock_code_input", "value"), State("forecast_days_input", "value")]
+    [State("stock_code_input", "value"), State("forecast_days_input", "value")],
+    prevent_initial_call=True
 )
 def update_forecast_graph(n_clicks, stock_code, n_days):
     if n_clicks == 0 or not n_days or not stock_code:
@@ -431,16 +545,16 @@ def update_forecast_graph(n_clicks, stock_code, n_days):
     try:
         # Limit forecast to maximum 30 days
         if n_days > 30:
-            return html.P("Forecast is only available for the next 30 days. Please enter a value between 1 and 30.", style={'color': 'orange'})
+            return html.P("Forecast is only available for the next 30 days. Please enter a value between 1 and 30.", style={'color': '#f39c12'})
         
         if n_days < 1:
-            return html.P("Please enter a positive number of days for forecasting.", style={'color': 'orange'})
+            return html.P("Please enter a positive number of days for forecasting.", style={'color': '#f39c12'})
         
         # Get the forecast
         forecast_df = predict_stock_price(stock_code, int(n_days))
         
         if forecast_df is None:
-            return html.P("Could not generate forecast. Please check the stock ticker.", style={'color': 'orange'})
+            return html.P("Could not generate forecast. Please check the stock ticker.", style={'color': '#f39c12'})
 
         # Create the figure to match the requested style
         fig = go.Figure()
@@ -451,7 +565,7 @@ def update_forecast_graph(n_clicks, stock_code, n_days):
             y=forecast_df['Prediction'], 
             mode='lines+markers', 
             name='Predicted Close Price',
-            line=dict(color='blue'),
+            line=dict(color='#3498db'),
             marker=dict(size=6)
         ))
         
@@ -467,29 +581,29 @@ def update_forecast_graph(n_clicks, stock_code, n_days):
             arrowhead=2,
             arrowsize=1,
             arrowwidth=2,
-            arrowcolor="blue",
+            arrowcolor="#3498db",
             ax=20,
             ay=-30,
-            bgcolor="blue",
-            bordercolor="blue",
+            bgcolor="#3498db",
+            bordercolor="#3498db",
             borderwidth=2,
             font=dict(color="white")
         )
         
-        # Update layout for a clean, focused look
+        # Update layout for a clean, focused look with dark theme
         fig.update_layout(
             title=f"Predicted Close Price of next {n_days} days",
-            template='plotly_white',
-            paper_bgcolor='white',
-            plot_bgcolor='white',
-            font=dict(color='black'),
+            template='plotly_dark',
+            paper_bgcolor='#34495e',
+            plot_bgcolor='#2c3e50',
+            font=dict(color='white'),
             xaxis_title="Date",
             yaxis_title="Close Price",
             showlegend=False
         )
         return dcc.Graph(figure=fig)
     except Exception as e:
-        return html.P(f"An error occurred during forecast: {e}", style={'color': 'red'})
+        return html.P(f"An error occurred during forecast: {e}", style={'color': '#e74c3c'})
 
 # --- Main Execution ---
 if __name__ == '__main__':
