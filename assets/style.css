@@ -1,4 +1,3 @@
-/* --- Global Styles --- */
 * {
   margin: 0;
   padding: 0;
@@ -7,18 +6,16 @@
 }
 
 body {
-  background-color: #111827; /* Dark background for the whole page */
-  color: #E5E7EB; /* Light gray text color */
+  background-color: #111827; 
+  color: #E5E7EB; 
 }
 
-/* --- Main Layout Container --- */
 .container {
   display: flex;
   height: 100vh;
   width: 100vw;
 }
 
-/* --- Navigation & Input Panel (Left Side) --- */
 .nav {
   width: 28%;
   max-width: 400px;
@@ -27,7 +24,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  background-color: #1F2937; /* Slightly lighter dark shade */
+  background-color: #1F2937; 
   border-right: 1px solid #374151;
   overflow-y: auto;
 }
@@ -51,7 +48,6 @@ h3 {
   color: #9CA3AF;
 }
 
-/* --- Input Fields & Buttons --- */
 .DateInput_input, .DateInput_input_1, input[type="text"], input[type="number"] {
   background-color: #374151;
   color: #E5E7EB;
@@ -83,7 +79,6 @@ button:hover {
   background-color: #7DD3FC;
 }
 
-/* --- Main Content Area (Right Side) --- */
 .content {
   flex-grow: 1;
   padding: 32px;
@@ -116,7 +111,6 @@ button:hover {
   margin-bottom: 30px;
 }
 
-/* Specific styling for the date picker */
 .date-picker {
   width: 100%;
 }
