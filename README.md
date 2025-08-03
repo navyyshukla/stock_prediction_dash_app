@@ -29,6 +29,8 @@ Deployment: Docker, Gunicorn, Hugging Face Spaces
 
 Version Control: Git & GitHub
 
+[Live app](https://huggingface.co/spaces/navyyshukla/stock-prediction-app)
+
 🔧 How to Run Locally
 To set up and run this project on your local machine, follow these steps:
 
@@ -63,4 +65,3 @@ Start the Dash server with the following command:
 
 python app.py
 
-The application will be running at http://127.0.0.1:8050/. Open this URL in your web browser to use the app.
