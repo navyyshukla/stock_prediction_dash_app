@@ -1,8 +1,6 @@
 Stock Price Prediction Dashboard
 An interactive web dashboard built with Python and Dash to visualize historical stock data and predict future prices using an ensemble machine learning model.
 
-Note: You should take a screenshot of your running application and upload it to your GitHub repository to display it here.
-
 🚀 Features
 Company Information: Enter a stock ticker (e.g., GOOGL, MSFT, RELIANCE.NS) to fetch and display the company's logo, name, and a detailed business summary.
 
