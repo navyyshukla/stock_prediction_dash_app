@@ -1,4 +1,5 @@
 Stock Price Prediction Dashboard
+
 An interactive web dashboard built with Python and Dash to visualize historical stock data and predict future prices using an ensemble machine learning model.
 
 🚀 Features
